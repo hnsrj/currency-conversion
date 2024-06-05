@@ -1,0 +1,89 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
+
+public class CurrencyConverter {
+
+    // Hard-coded exchange rates for demonstration purposes
+    private static final Map<String, Double> exchangeRates = new HashMap<>();
+
+    static {
+        exchangeRates.put("USD_TO_EUR",0.92);
+        exchangeRates.put("EUR_TO_USD",1.09);
+        exchangeRates.put("USD_TO_INR", 74.85);  // Example rate
+        exchangeRates.put("INR_TO_USD",0.012 );  // Example rate
+        exchangeRates.put("EUR_TO_INR", 90.55);
+        exchangeRates.put("INR_TO_EUR",0.011);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> createAndShowGUI());
+    }
+
+    private static void createAndShowGUI() {
+        JFrame frame = new JFrame("Currency Converter");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 200);
+
+        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
+
+        JLabel fromLabel = new JLabel("From:");
+        JComboBox<String> fromCurrency = new JComboBox<>(new String[]{"USD", "EUR","INR"});
+        JLabel toLabel = new JLabel("To:");
+        JComboBox<String> toCurrency = new JComboBox<>(new String[]{"USD", "EUR","INR"});
+
+        JLabel amountLabel = new JLabel("Amount:");
+        JTextField amountField = new JTextField();
+
+        JLabel resultLabel = new JLabel("Converted Amount:");
+        JTextField resultField = new JTextField();
+        resultField.setEditable(false);
+
+        JButton convertButton = new JButton("Convert");
+        convertButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String from = (String) fromCurrency.getSelectedItem();
+                String to = (String) toCurrency.getSelectedItem();
+                String amountText = amountField.getText();
+
+                try {
+                    double amount = Double.parseDouble(amountText);
+                    double convertedAmount = convertCurrency(from, to, amount);
+                    resultField.setText(String.format("%.2f", convertedAmount));
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Invalid amount entered. Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        panel.add(fromLabel);
+        panel.add(fromCurrency);
+        panel.add(toLabel);
+        panel.add(toCurrency);
+        panel.add(amountLabel);
+        panel.add(amountField);
+        panel.add(resultLabel);
+        panel.add(resultField);
+        panel.add(new JLabel());  // Empty label for spacing
+        panel.add(convertButton);
+
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    private static double convertCurrency(String from, String to, double amount) {
+        if (from.equals(to)) {
+            return amount;
+        }
+        String key = from + "_TO_" + to;
+        Double rate = exchangeRates.get(key);
+        if (rate == null) {
+            throw new IllegalArgumentException("Unsupported currency conversion: " + from + " to " + to);
+        }
+        return amount * rate;
+    }
+}
